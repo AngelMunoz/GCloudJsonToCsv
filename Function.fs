@@ -47,8 +47,6 @@ type User =
 type RequestData =
     { todos: Todo list option
       posts: Post list option
-
-
       users: User list option }
 
 [<AutoOpen>]
@@ -113,16 +111,13 @@ module FileWriter =
         // just write the sheets that are in the payload
 
         data.todos
-        |> Option.map (fun todos -> writeTodos todos (workbook.AddWorksheet("Todos")))
-        |> ignore
+        |> Option.iter (fun todos -> writeTodos todos (workbook.AddWorksheet("Todos")))
 
         data.posts
-        |> Option.map (fun posts -> writePosts posts (workbook.AddWorksheet("Posts")))
-        |> ignore
+        |> Option.iter (fun posts -> writePosts posts (workbook.AddWorksheet("Posts")))
 
         data.users
-        |> Option.map (fun users -> writeUsers users (workbook.AddWorksheet("Users")))
-        |> ignore
+        |> Option.iter (fun users -> writeUsers users (workbook.AddWorksheet("Users")))
         // once we've added out worksheets we can write our excel file
         Excel.createFrom (workbook)
 
@@ -155,16 +150,14 @@ type Function() =
                         StringValues("""attachment;filename="asExcel.xlsx";""")
                     )
 
-                    context.Response.Headers.Add(
-                        "Content-Type",
-                        StringValues("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-                    )
+                    context.Response.Headers.Add("Content-Type", StringValues(Excel.contentType))
 
                     do! context.Response.Body.WriteAsync bytes
 
                 with ex ->
                     eprintfn "%O" ex
                     context.Response.Headers.Add("Content-Type", StringValues("application/json"))
+                    context.Response.StatusCode <- 500
                     do! context.Response.WriteAsync("""{ "message": "Something went wrong" }""")
             }
             :> _
