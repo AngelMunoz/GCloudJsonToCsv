@@ -149,7 +149,6 @@ type Function() =
                     let excel = writeExcelFile payload
                     let bytes = ReadOnlyMemory excel
 
-                    do! context.Response.Body.WriteAsync bytes
 
                     context.Response.Headers.Add(
                         HeaderNames.ContentDisposition,
@@ -161,9 +160,11 @@ type Function() =
                         StringValues("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                     )
 
+                    do! context.Response.Body.WriteAsync bytes
+
                 with ex ->
                     eprintfn "%O" ex
-                    do! context.Response.WriteAsync("""{ "message": "Something went wrong" }""")
                     context.Response.Headers.Add("Content-Type", StringValues("application/json"))
+                    do! context.Response.WriteAsync("""{ "message": "Something went wrong" }""")
             }
             :> _
