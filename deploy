@@ -1,0 +1,3 @@
+gcloud functions deploy json-to-csv-fn \
+--entry-point JsonToCsv.Function \
+--runtime dotnet3 --trigger-http --allow-unauthenticated
